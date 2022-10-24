@@ -246,15 +246,15 @@ We also need to change nulls to NA’s in the table country_info.
 
 ``` r
 # replace nulls with NA in the whole data frame
-country_info <- data.frame(lapply(country_info, 
-                  function(x)
-                    {
-                    gsub(x,
-                         pattern = "null",
-                         replacement = NA)
-                    }
-                  )
-           ) 
+country_info <- data.frame(lapply(country_info,
+                                  function(x)
+                                    {
+                                    gsub(x,
+                                         pattern = "null",
+                                         replacement = NA)
+                                    }
+                                  )
+                           ) 
 
 
 head(country_info)
@@ -367,7 +367,8 @@ world_pop %>%
   # filter for rows with Kenya data
   filter(country_name == "Kenya") %>% 
   # manipulate variables of interest
-  transmute(year, population = population/1000000)%>%
+  transmute(year, 
+            population = population/1000000)%>%
   # create the plot's base layer
   ggplot(aes(year, population))+
   geom_line(size = 1)+
@@ -416,8 +417,8 @@ Kenya %>%
 It is evident from the graph above that Kenya’s population increased
 quickly between 1960 and 2020. The population was about 8 million in
 1960. Since then, this number has increased to over 50 million until the
-year 2020. On average, the population grew by 3.100397 percent between
-1960 and 2020.
+year 2020. On average, the population grew by 3.100397 percent since
+1960.
 
 ### How did the population in different regions of the world change over time?
 
@@ -453,7 +454,25 @@ summarized_latin <- Latin_America_Caribbean %>%
   group_by(year) %>% 
   # aggregate the population for all countries
   summarize(population =sum(population))
+```
 
+*To avoid repeating the above transformation steps for all the other
+regions, we can create a function that will automate these steps. We can
+do so as show in the code chunk below*
+
+``` r
+transform <- function(x)
+{
+  x %>% # where x is a dataframe
+    filter(!is.na(population)) %>% # remove rows with NA's
+    transmute(year,  # select variables of interest
+              population = population/1000000) %>% # transform population into millions
+    group_by(year) %>% # aggregate the population for all countries
+    summarize(population =sum(population))
+}
+```
+
+``` r
 # print the first 6 rows of the aggregated data
 head(summarized_latin)
 ```
@@ -495,7 +514,7 @@ summarized_latin %>%
        subtitle = "(Data source::datacamp.com)")
 ```
 
-![](script_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](script_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
 # create population growth rate for each year 
@@ -534,8 +553,8 @@ summarize(mean_growth_rate = mean(growth_rate, na.rm= T))
     ## 1             1.79
 
 The population of the region of Latin America and the Caribbean has been
-growing at a declining rate, according to the graph above. Between 1960
-and 2020, this region’s average growth rate was 1.794714 percent.
+growing at a declining rate, according to the graph above. Since 1960,
+this region’s average growth rate was 1.794714 percent.
 
 **South Asia Region**
 
@@ -544,15 +563,8 @@ and 2020, this region’s average growth rate was 1.794714 percent.
 south_asia <- world_pop %>%
   filter(region == "South Asia")
 
-# aggregate the population 
-summarized_south_asia <- south_asia %>%
-  # select variables of interest
-  transmute(year, 
-            # transform population into millions
-            population = population/1000000) %>% 
-  group_by(year) %>% 
-  # aggregate the population for all countries
-  summarize(population =sum(population))
+# we can pass the filtered dataframe into our transform function to get the aggregated data
+summarized_south_asia <- transform(south_asia)
 
 # print the first 6 rows of the aggregated data
 head(summarized_south_asia)
@@ -596,7 +608,7 @@ summarized_south_asia %>%
        subtitle = "(Data source::datacamp.com)")
 ```
 
-![](script_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](script_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ``` r
 # create population growth rate column 
@@ -635,5 +647,100 @@ summarize(mean_growth_rate = mean(growth_rate, na.rm= T))
     ## 1             1.94
 
 The population of the region of South Asia has been growing at a
-declining rate, according to the graph above. Between 1960 and 2020,
-this region’s average growth rate was 1.940208 percent.
+declining rate, according to the graph above. Since 1960, this region’s
+average growth rate was 1.940208 percent.
+
+**Sub-Saharan Africa Region**
+
+``` r
+# filter for observations where region is Sub-Saharan Africa
+sub_saharan_africa <- world_pop %>%
+  filter(region == "Sub-Saharan Africa")
+
+# aggregate the population 
+summarized_sub_saharan_africa <- transform(sub_saharan_africa)
+
+# print the first 6 rows of the aggregated data
+head(summarized_sub_saharan_africa)
+```
+
+    ## # A tibble: 6 × 2
+    ##    year population
+    ##   <dbl>      <dbl>
+    ## 1  1960       227.
+    ## 2  1961       233.
+    ## 3  1962       238.
+    ## 4  1963       244.
+    ## 5  1964       250.
+    ## 6  1965       256.
+
+``` r
+# print the first 6 rows of the aggregated data
+tail(summarized_sub_saharan_africa)
+```
+
+    ## # A tibble: 6 × 2
+    ##    year population
+    ##   <dbl>      <dbl>
+    ## 1  2015       992.
+    ## 2  2016      1019.
+    ## 3  2017      1047.
+    ## 4  2018      1075.
+    ## 5  2019      1103.
+    ## 6  2020      1133.
+
+``` r
+# visualize the data
+summarized_sub_saharan_africa %>% 
+  ggplot(aes(year, population))+
+  geom_line(size = 1)+
+  theme_economist()+
+  labs(title = "Population Growth of the Sub-Saharan Africa Region between 1960 and 2020",
+       y = "Population in Millions",
+       x = "Time in Years",
+       subtitle = "(Data source::datacamp.com)")
+```
+
+![](script_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+
+``` r
+# create population growth rate column 
+summarized_sub_saharan_africa <- summarized_sub_saharan_africa %>% 
+  mutate(population_lag = lag(population),
+         growth_rate = (population- population_lag)/population*100)
+
+#print summarized_south_asia
+summarized_sub_saharan_africa
+```
+
+    ## # A tibble: 61 × 4
+    ##     year population population_lag growth_rate
+    ##    <dbl>      <dbl>          <dbl>       <dbl>
+    ##  1  1960       227.            NA        NA   
+    ##  2  1961       233.           227.        2.29
+    ##  3  1962       238.           233.        2.33
+    ##  4  1963       244.           238.        2.37
+    ##  5  1964       250.           244.        2.39
+    ##  6  1965       256.           250.        2.42
+    ##  7  1966       262.           256.        2.44
+    ##  8  1967       269.           262.        2.46
+    ##  9  1968       276.           269.        2.49
+    ## 10  1969       283.           276.        2.52
+    ## # … with 51 more rows
+
+``` r
+# calculate the average growth rate for all years
+summarized_sub_saharan_africa %>% 
+summarize(mean_growth_rate = mean(growth_rate, na.rm= T))
+```
+
+    ## # A tibble: 1 × 1
+    ##   mean_growth_rate
+    ##              <dbl>
+    ## 1             2.64
+
+According to the data above, Sub-Saharan Africa’s population expanded as
+well, first at a declining rate and later a rising one. Sub-Saharan
+Africa experienced an average growth rate of 2.641404 percent from 1960
+to 2020, which was higher than that of the Latin & Caribbean and South
+Asia regions.
