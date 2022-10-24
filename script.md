@@ -372,8 +372,9 @@ world_pop %>%
   ggplot(aes(year, population))+
   geom_line(size = 1)+
   theme_economist()+
-  labs(title = "Population of Kenya from 1960 to 2020",
+  labs(title = "Population of Kenya between 1960 and 2020",
        y = "Population in Millions",
+       x = "Time in Years",
        subtitle = "(Data source::datacamp.com)")
 ```
 
@@ -488,8 +489,9 @@ summarized_latin %>%
   ggplot(aes(year, population))+
   geom_line(size = 1)+
   theme_economist()+
-  labs(title = "Population Growth of the Latin America & Caribbean Region from 1960 to 2020",
+  labs(title = "Population Growth of the Latin America & Caribbean Region between 1960 and 2020",
        y = "Population in Millions",
+       x = "Time in years",
        subtitle = "(Data source::datacamp.com)")
 ```
 
@@ -534,3 +536,104 @@ summarize(mean_growth_rate = mean(growth_rate, na.rm= T))
 The population of the region of Latin America and the Caribbean has been
 growing at a declining rate, according to the graph above. Between 1960
 and 2020, this region’s average growth rate was 1.794714 percent.
+
+**South Asia Region**
+
+``` r
+# filter for observations where region is South Asia
+south_asia <- world_pop %>%
+  filter(region == "South Asia")
+
+# aggregate the population 
+summarized_south_asia <- south_asia %>%
+  # select variables of interest
+  transmute(year, 
+            # transform population into millions
+            population = population/1000000) %>% 
+  group_by(year) %>% 
+  # aggregate the population for all countries
+  summarize(population =sum(population))
+
+# print the first 6 rows of the aggregated data
+head(summarized_south_asia)
+```
+
+    ## # A tibble: 6 × 2
+    ##    year population
+    ##   <dbl>      <dbl>
+    ## 1  1960       573.
+    ## 2  1961       585.
+    ## 3  1962       597.
+    ## 4  1963       610.
+    ## 5  1964       624.
+    ## 6  1965       638.
+
+``` r
+# print the first 6 rows of the aggregated data
+tail(summarized_south_asia)
+```
+
+    ## # A tibble: 6 × 2
+    ##    year population
+    ##   <dbl>      <dbl>
+    ## 1  2015      1749.
+    ## 2  2016      1771.
+    ## 3  2017      1793.
+    ## 4  2018      1814.
+    ## 5  2019      1836.
+    ## 6  2020      1857.
+
+``` r
+# visualize the data
+summarized_south_asia %>% 
+  ggplot(aes(year, population))+
+  geom_line(size = 1)+
+  ylim(500, 2000)+
+  theme_economist()+
+  labs(title = "Population Growth of the South Asia Region between 1960 and 2020",
+       y = "Population in Millions",
+       x = "Time in Years",
+       subtitle = "(Data source::datacamp.com)")
+```
+
+![](script_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+``` r
+# create population growth rate column 
+summarized_south_asia <- summarized_south_asia %>% 
+  mutate(population_lag = lag(population),
+         growth_rate = (population- population_lag)/population*100)
+
+#print summarized_south_asia
+summarized_south_asia
+```
+
+    ## # A tibble: 61 × 4
+    ##     year population population_lag growth_rate
+    ##    <dbl>      <dbl>          <dbl>       <dbl>
+    ##  1  1960       573.            NA        NA   
+    ##  2  1961       585.           573.        2.07
+    ##  3  1962       597.           585.        2.10
+    ##  4  1963       610.           597.        2.13
+    ##  5  1964       624.           610.        2.15
+    ##  6  1965       638.           624.        2.18
+    ##  7  1966       652.           638.        2.20
+    ##  8  1967       667.           652.        2.21
+    ##  9  1968       682.           667.        2.23
+    ## 10  1969       698.           682.        2.24
+    ## # … with 51 more rows
+
+``` r
+# calculate the average growth rate for all years
+summarized_south_asia %>% 
+summarize(mean_growth_rate = mean(growth_rate, na.rm= T))
+```
+
+    ## # A tibble: 1 × 1
+    ##   mean_growth_rate
+    ##              <dbl>
+    ## 1             1.94
+
+The population of the region of South Asia has been growing at a
+declining rate, according to the graph above. Between 1960 and 2020,
+this region’s average growth rate was 1.940208 percent.
