@@ -7,13 +7,15 @@ Mwangi George
     datasets</a>
 -   <a href="#wrangling-the-data" id="toc-wrangling-the-data">Wrangling the
     data</a>
+-   <a href="#analysis" id="toc-analysis">Analysis</a>
 
 ``` r
 # load important packages
 # tidyverse for data importation, wrangling and visualization
 # janitor for data cleaning 
-# lubridate for dealing with dates
-pacman::p_load(tidyverse, janitor, lubridate)
+# lubridate for dealing with dates and 
+# ggthemes for plotting themes
+pacman::p_load(tidyverse, janitor, lubridate, ggthemes)
 ```
 
 ## Loading datasets
@@ -224,8 +226,8 @@ unique(not_in_pop_data$population)
 
     ## [1] NA
 
-We learn that a country with coded `INX` does not have any population
-figures for all years. We can therefore remove it from the table.
+We discover that the demographic data for a nation with the code `INX`
+is missing for all years. As a result, we can take it off the table.
 
 ``` r
 pop_data <- pop_data %>% 
@@ -273,7 +275,7 @@ head(country_info)
     ## 5                      Angola
     ## 6                     Albania
 
-Renaming columns
+-   Renaming columns
 
 ``` r
 # rename table_name column
@@ -287,9 +289,11 @@ names(country_info)
     ## [1] "country_code"  "region"        "income_group"  "special_notes"
     ## [5] "country_name"
 
-Finally, it would be a good a idea to have one data frame that we will
-use for all analyses. We will combine the two tables using the
-`country_code` code and then select our rows of interest.
+Last but not least, it would be a good idea to utilize a single data
+frame for all of our analysis.
+
+We’ll join the two tables together using the `country_code` column
+before choosing our key variables.
 
 ``` r
 world_pop <- pop_data %>%
@@ -303,6 +307,7 @@ world_pop <- pop_data %>%
          year, 
          population)
 
+# view a few rows
 world_pop %>% 
   head(3)
 ```
@@ -313,3 +318,62 @@ world_pop %>%
     ## 1 Aruba        Latin America & Caribbean High income  1960       54208
     ## 2 Aruba        Latin America & Caribbean High income  1961       55434
     ## 3 Aruba        Latin America & Caribbean High income  1962       56234
+
+``` r
+# check for correct data types 
+glimpse(world_pop)
+```
+
+    ## Rows: 16,165
+    ## Columns: 5
+    ## $ country_name <chr> "Aruba", "Aruba", "Aruba", "Aruba", "Aruba", "Aruba", "Ar…
+    ## $ region       <chr> "Latin America & Caribbean", "Latin America & Caribbean",…
+    ## $ income_group <chr> "High income", "High income", "High income", "High income…
+    ## $ year         <chr> "1960", "1961", "1962", "1963", "1964", "1965", "1966", "…
+    ## $ population   <dbl> 54208, 55434, 56234, 56699, 57029, 57357, 57702, 58044, 5…
+
+Let’s change the variables `country_name`, `region`, `income_group` into
+factors and `year` into numeric.
+
+``` r
+world_pop <- world_pop %>% 
+  mutate(country_name = as.factor(country_name),
+         region = as.factor(region),
+         income_group = as.factor(income_group),
+         year = as.numeric(year))
+```
+
+## Analysis
+
+**How did the population of Kenya change over time?**
+
+We will make a graphic that plots population data on the y axis and time
+on the x axis in order to provide an answer to this question. But first,
+we must search for rows in our `world_pop` dataframe that include
+information on Kenya. Take note of the code chunk below, where we use
+pipe operators to construct data pipelines.
+
+``` r
+options(scipen = 999) # removes the scientific notation
+
+world_pop %>% 
+  # filter for rows with Kenya data
+  filter(country_name == "Kenya") %>% 
+  # manipulate variables of interest
+  transmute(year, population = population/1000000)%>%
+  # create a the plot's base layer
+  ggplot(aes(year, population))+
+  geom_line()+
+  theme_economist()+
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(title = "Population of Kenya over Time",
+       y = "Population in Millions",
+       subtitle = "(Data source::datacamp.com)")
+```
+
+![](script_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+It is evident from the graph above that Kenya’s population increased
+quickly between 1960 and 2020. The population was about 8 million in
+1960. Since then, this number has increased to over 50 million until the
+year 2020.
