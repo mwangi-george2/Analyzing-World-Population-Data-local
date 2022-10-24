@@ -372,6 +372,7 @@ world_pop %>%
   # create the plot's base layer
   ggplot(aes(year, population))+
   geom_line(size = 1)+
+  ylim(0, 60)+
   theme_economist()+
   labs(title = "Population of Kenya between 1960 and 2020",
        y = "Population in Millions",
@@ -507,6 +508,7 @@ tail(summarized_latin)
 summarized_latin %>% 
   ggplot(aes(year, population))+
   geom_line(size = 1)+
+  ylim(0, 800)+
   theme_economist()+
   labs(title = "Population Growth of the Latin America & Caribbean Region between 1960 and 2020",
        y = "Population in Millions",
@@ -600,7 +602,7 @@ tail(summarized_south_asia)
 summarized_south_asia %>% 
   ggplot(aes(year, population))+
   geom_line(size = 1)+
-  ylim(500, 2000)+
+  ylim(0, 2000)+
   theme_economist()+
   labs(title = "Population Growth of the South Asia Region between 1960 and 2020",
        y = "Population in Millions",
@@ -694,6 +696,7 @@ tail(summarized_sub_saharan_africa)
 summarized_sub_saharan_africa %>% 
   ggplot(aes(year, population))+
   geom_line(size = 1)+
+  ylim(0, 1200)+
   theme_economist()+
   labs(title = "Population Growth of the Sub-Saharan Africa Region between 1960 and 2020",
        y = "Population in Millions",
@@ -709,24 +712,22 @@ summarized_sub_saharan_africa <- summarized_sub_saharan_africa %>%
   mutate(population_lag = lag(population),
          growth_rate = (population- population_lag)/population*100)
 
-#print summarized_south_asia
-summarized_sub_saharan_africa
+head(summarized_sub_saharan_africa, 1)
 ```
 
-    ## # A tibble: 61 × 4
-    ##     year population population_lag growth_rate
-    ##    <dbl>      <dbl>          <dbl>       <dbl>
-    ##  1  1960       227.            NA        NA   
-    ##  2  1961       233.           227.        2.29
-    ##  3  1962       238.           233.        2.33
-    ##  4  1963       244.           238.        2.37
-    ##  5  1964       250.           244.        2.39
-    ##  6  1965       256.           250.        2.42
-    ##  7  1966       262.           256.        2.44
-    ##  8  1967       269.           262.        2.46
-    ##  9  1968       276.           269.        2.49
-    ## 10  1969       283.           276.        2.52
-    ## # … with 51 more rows
+    ## # A tibble: 1 × 4
+    ##    year population population_lag growth_rate
+    ##   <dbl>      <dbl>          <dbl>       <dbl>
+    ## 1  1960       227.             NA          NA
+
+``` r
+tail(summarized_sub_saharan_africa, 1)
+```
+
+    ## # A tibble: 1 × 4
+    ##    year population population_lag growth_rate
+    ##   <dbl>      <dbl>          <dbl>       <dbl>
+    ## 1  2020      1133.          1103.        2.56
 
 ``` r
 # calculate the average growth rate for all years
@@ -739,8 +740,9 @@ summarize(mean_growth_rate = mean(growth_rate, na.rm= T))
     ##              <dbl>
     ## 1             2.64
 
-According to the analysis above, Sub-Saharan Africa’s population
-expanded as well, first at a declining rate and later a rising one.
-Sub-Saharan Africa experienced an average growth rate of 2.641404
-percent from 1960 to 2020, which was higher than that of the Latin &
-Caribbean and South Asia regions.
+**Insights** According to the analysis above, Sub-Saharan Africa’s
+population expanded as well, first at a declining rate and later a
+rising one. The population figure in 1960 was about 227 million and
+about 1,132 million in 2020. Sub-Saharan Africa experienced an average
+growth rate of 2.641404 percent from 1960 to 2020, which was higher than
+that of the Latin & Caribbean and South Asia regions.
