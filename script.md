@@ -8,6 +8,14 @@ Mwangi George
 -   <a href="#wrangling-the-data" id="toc-wrangling-the-data">Wrangling the
     data</a>
 -   <a href="#analysis" id="toc-analysis">Analysis</a>
+    -   <a href="#how-did-the-population-of-kenya-change-over-time"
+        id="toc-how-did-the-population-of-kenya-change-over-time">How did the
+        population of Kenya change over time?</a>
+    -   <a
+        href="#how-did-the-population-in-different-regions-of-the-world-change-over-time"
+        id="toc-how-did-the-population-in-different-regions-of-the-world-change-over-time">How
+        did the population in different regions of the world change over
+        time?</a>
 
 ``` r
 # load important packages
@@ -39,10 +47,9 @@ pop_data <- read_csv("datasets/pop_data.csv",
 
 ## Wrangling the data
 
-For any kind of work that involves data analytics, it is important that
-the analyst understands the structure, data types, shape of the data
-they are working with. In this section, we are going to run some code to
-help us explore our data.
+It is critical that we comprehend the structure, data types, and shape
+of the data we’ll be working with. We will execute some code in this
+part to aid in our data exploration.
 
 ``` r
 # print the structure of pop_data
@@ -116,7 +123,7 @@ glimpse(pop_data)
     ## $ `2019`           <dbl> 106310, 660046272, 38041757, 446911598, 31825299, 285…
     ## $ `2020`           <dbl> 106766, 677243299, 38928341, 458803476, 32866268, 283…
 
-From the above outpt, we make some important insights about our data:
+From the above output, we make some important insights about our data:
 
 -   The data contains 266 rows and 64 columns. Each country has a single
     row with multiple columns to hold the population figures of various
@@ -203,7 +210,7 @@ We can make some important observations from the code output above:
     contains 265 rows, indicating that there exists a record in one
     table and not in the other table.
 
--   Some obversations are coded as `null` insetad of `NA`.
+-   Some observations are coded as `null` instead of `NA`.
 
 -   Also, we will rename the `table_name` column to `country_name`.
 
@@ -345,7 +352,7 @@ world_pop <- world_pop %>%
 
 ## Analysis
 
-**How did the population of Kenya change over time?**
+### How did the population of Kenya change over time?
 
 We will make a graphic that plots population data on the y axis and time
 on the x axis in order to provide an answer to this question. But first,
@@ -361,19 +368,169 @@ world_pop %>%
   filter(country_name == "Kenya") %>% 
   # manipulate variables of interest
   transmute(year, population = population/1000000)%>%
-  # create a the plot's base layer
+  # create the plot's base layer
   ggplot(aes(year, population))+
-  geom_line()+
+  geom_line(size = 1)+
   theme_economist()+
-  theme(axis.text.x = element_text(angle = 90))+
-  labs(title = "Population of Kenya over Time",
+  labs(title = "Population of Kenya from 1960 to 2020",
        y = "Population in Millions",
        subtitle = "(Data source::datacamp.com)")
 ```
 
 ![](script_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
+``` r
+# determine population growth rate
+Kenya <- world_pop %>% 
+  filter(country_name == "Kenya") %>% 
+  transmute(year, 
+            population, 
+            population_lag = lag(population),
+            growth_rate = (population - population_lag)/population*100)
+
+head(Kenya)
+```
+
+    ## # A tibble: 6 × 4
+    ##    year population population_lag growth_rate
+    ##   <dbl>      <dbl>          <dbl>       <dbl>
+    ## 1  1960    8120082             NA       NA   
+    ## 2  1961    8377693        8120082        3.07
+    ## 3  1962    8647002        8377693        3.11
+    ## 4  1963    8928510        8647002        3.15
+    ## 5  1964    9222692        8928510        3.19
+    ## 6  1965    9530163        9222692        3.23
+
+``` r
+# calculate average population growth rate 
+Kenya %>% 
+  summarize(average_pop_growth_rate = mean(growth_rate, na.rm = T))
+```
+
+    ## # A tibble: 1 × 1
+    ##   average_pop_growth_rate
+    ##                     <dbl>
+    ## 1                    3.10
+
 It is evident from the graph above that Kenya’s population increased
 quickly between 1960 and 2020. The population was about 8 million in
 1960. Since then, this number has increased to over 50 million until the
-year 2020.
+year 2020. On average, the population grew by 3.100397 percent between
+1960 and 2020.
+
+### How did the population in different regions of the world change over time?
+
+Let’s start by identifying all the regions in the world_pop dataset.
+
+``` r
+# print unique regions in the world
+unique(world_pop$region)
+```
+
+    ## [1] Latin America & Caribbean  <NA>                      
+    ## [3] South Asia                 Sub-Saharan Africa        
+    ## [5] Europe & Central Asia      Middle East & North Africa
+    ## [7] East Asia & Pacific        North America             
+    ## 7 Levels: East Asia & Pacific ... Sub-Saharan Africa
+
+We identify 7 regions in the dataset. We are going to analyze each of
+these regions individually and then compare the findings.
+
+**Latin America & Caribbean Region**
+
+``` r
+# filter for observations where region is Latin America & Caribbean
+Latin_America_Caribbean <- world_pop %>%
+  filter(region == "Latin America & Caribbean")
+
+# aggregate the population 
+summarized_latin <- Latin_America_Caribbean %>%
+  # select variables of interest
+  transmute(year, 
+            # transform population into millions
+            population = population/1000000) %>% 
+  group_by(year) %>% 
+  # aggregate the population for all countries
+  summarize(population =sum(population))
+
+# print the first 6 rows of the aggregated data
+head(summarized_latin)
+```
+
+    ## # A tibble: 6 × 2
+    ##    year population
+    ##   <dbl>      <dbl>
+    ## 1  1960       220.
+    ## 2  1961       226.
+    ## 3  1962       232.
+    ## 4  1963       239.
+    ## 5  1964       245.
+    ## 6  1965       252.
+
+``` r
+# print the first 6 rows of the aggregated data
+tail(summarized_latin)
+```
+
+    ## # A tibble: 6 × 2
+    ##    year population
+    ##   <dbl>      <dbl>
+    ## 1  2015       622.
+    ## 2  2016       628.
+    ## 3  2017       635.
+    ## 4  2018       640.
+    ## 5  2019       646.
+    ## 6  2020       652.
+
+``` r
+# visualize the data
+summarized_latin %>% 
+  ggplot(aes(year, population))+
+  geom_line(size = 1)+
+  theme_economist()+
+  labs(title = "Population Growth of the Latin America & Caribbean Region from 1960 to 2020",
+       y = "Population in Millions",
+       subtitle = "(Data source::datacamp.com)")
+```
+
+![](script_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+``` r
+# create population growth rate for each year 
+summarized_latin <- summarized_latin %>% 
+  mutate(population_lag = lag(population),
+         growth_rate = (population- population_lag)/population*100)
+
+#print summarized_latin
+summarized_latin
+```
+
+    ## # A tibble: 61 × 4
+    ##     year population population_lag growth_rate
+    ##    <dbl>      <dbl>          <dbl>       <dbl>
+    ##  1  1960       220.            NA        NA   
+    ##  2  1961       226.           220.        2.69
+    ##  3  1962       232.           226.        2.70
+    ##  4  1963       239.           232.        2.69
+    ##  5  1964       245.           239.        2.67
+    ##  6  1965       252.           245.        2.63
+    ##  7  1966       258.           252.        2.58
+    ##  8  1967       265.           258.        2.54
+    ##  9  1968       272.           265.        2.51
+    ## 10  1969       279.           272.        2.47
+    ## # … with 51 more rows
+
+``` r
+# calculate the average growth rate for all years
+summarized_latin %>% 
+summarize(mean_growth_rate = mean(growth_rate, na.rm= T))
+```
+
+    ## # A tibble: 1 × 1
+    ##   mean_growth_rate
+    ##              <dbl>
+    ## 1             1.79
+
+The population of the region of Latin America and the Caribbean has been
+growing at a declining rate, according to the graph above. Between 1960
+and 2020, this region’s average growth rate was 1.794714 percent.
