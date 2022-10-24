@@ -740,9 +740,10 @@ summarize(mean_growth_rate = mean(growth_rate, na.rm= T))
     ##              <dbl>
     ## 1             2.64
 
-**Insights** According to the analysis above, Sub-Saharan Africa’s
-population expanded as well, first at a declining rate and later a
-rising one. The population figure in 1960 was about 227 million and
-about 1,132 million in 2020. Sub-Saharan Africa experienced an average
-growth rate of 2.641404 percent from 1960 to 2020, which was higher than
-that of the Latin & Caribbean and South Asia regions.
+**Insights**
+
+According to the analysis above, Sub-Saharan Africa’s population
+expanded as well. The population figure in 1960 was about 227 million
+and about 1,132 million in 2020. Sub-Saharan Africa experienced an
+average growth rate of 2.641404 percent from 1960 to 2020, which was
+higher than that of the Latin & Caribbean and South Asia regions.
